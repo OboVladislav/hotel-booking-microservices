@@ -1,0 +1,20 @@
+package com.example.booking;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+@Component
+public class TraceServletFilter extends OncePerRequestFilter {
+ @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain) throws IOException,ServletException {
+  String id=request.getHeader("X-Trace-Id");
+  if(id==null || id.isBlank()) id=UUID.randomUUID().toString();
+  MDC.put("traceId",id);
+  response.setHeader("X-Trace-Id",id);
+  try {chain.doFilter(request,response);} finally {MDC.remove("traceId");}
+ }
+}
